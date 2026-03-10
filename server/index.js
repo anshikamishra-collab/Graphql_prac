@@ -12,8 +12,7 @@ async function startServer() {
   // 🔥 IMPORTANT: JSON parser BEFORE GraphQL middleware
   app.use(express.json());
 
-
-const typeDefs = `
+  const typeDefs = `
   type User {
     id: Int
     name: String
@@ -30,12 +29,11 @@ const typeDefs = `
   }
 
   type Query {
-    todos: [Todo]
-    todo(id: Int!): Todo
-  }
+  todos: [Todo]
+  todo(id: Int!): Todo
+  todosByRange(min: Int!, max: Int!): [Todo]
+}
 `;
-
-
 const resolvers = {
   Query: {
     // Get all todos
@@ -52,6 +50,17 @@ const resolvers = {
         `https://jsonplaceholder.typicode.com/todos/${args.id}`
       );
       return response.data;
+    },
+
+    // ✅ FIXED — now inside Query
+    todosByRange: async (_, args) => {
+      const response = await axios.get(
+        "https://jsonplaceholder.typicode.com/todos"
+      );
+
+      return response.data.filter(
+        (todo) => todo.id >= args.min && todo.id <= args.max
+      );
     },
   },
 
